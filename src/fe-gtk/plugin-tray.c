@@ -808,6 +808,33 @@ tray_dcc_cb (char *word[], void *userdata)
 }
 
 static int
+tray_dcc_complete_cb (char *word[], void *userdata)
+{
+	const char *network;
+
+/*	if (tray_status == TS_FILEOFFER)
+		return HEXCHAT_EAT_NONE;*/
+
+	network = hexchat_get_info (ph, "network");
+	if (!network)
+		network = hexchat_get_info (ph, "server");
+
+	if (prefs.hex_input_tray_priv && (!prefs.hex_away_omit_alerts || tray_find_away_status () != 1))
+	{
+		tray_set_flash (ICON_FILE);
+
+		tray_set_tipf (_(DISPLAY_NAME": \"%s\" downloaded from %s (%s)"),
+								word[1], word[3], network);
+	}
+
+	if (prefs.hex_input_balloon_priv && (!prefs.hex_away_omit_alerts || tray_find_away_status () != 1))
+		tray_set_balloonf ("", _(DISPLAY_NAME": \"%s\" downloaded from %s (%s)"),
+								word[1], word[3], network);
+
+	return HEXCHAT_EAT_NONE;
+}
+
+static int
 tray_focus_cb (char *word[], void *userdata)
 {
 	tray_stop_flash ();
@@ -866,6 +893,7 @@ tray_plugin_init (hexchat_plugin *plugin_handle, char **plugin_name,
 	hexchat_hook_print (ph, "Invited", -1, tray_invited_cb, NULL);
 
 	hexchat_hook_print (ph, "DCC Offer", -1, tray_dcc_cb, NULL);
+	hexchat_hook_print (ph, "DCC RECV Complete", -1, tray_dcc_complete_cb, NULL);
 
 	hexchat_hook_print (ph, "Focus Window", -1, tray_focus_cb, NULL);
 
