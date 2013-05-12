@@ -75,7 +75,7 @@ menu_about (GtkWidget * wid, gpointer sess)
 		gtk_window_set_transient_for (GTK_WINDOW (about), parent_window);
 	}
 	g_signal_connect (G_OBJECT (about), "destroy", G_CALLBACK (about_close), 0);
-	vbox = GTK_DIALOG (about)->vbox;
+	vbox = gtk_dialog_get_content_area (GTK_DIALOG (about));
 
 	/* main horizontal box, text on the left, logo on the right */
 	hbox_main = gtk_hbox_new (FALSE, 0);
@@ -149,7 +149,7 @@ menu_about (GtkWidget * wid, gpointer sess)
 	/* our close button on the bottom right */
 	wid = gtk_button_new_from_stock (GTK_STOCK_CLOSE);
 	GTK_WIDGET_SET_FLAGS (GTK_WIDGET (wid), GTK_CAN_DEFAULT);
-	gtk_box_pack_end (GTK_BOX (GTK_DIALOG (about)->action_area), wid, 0, 0, 0);
+	gtk_box_pack_end (GTK_BOX (gtk_dialog_get_action_area (GTK_DIALOG (about))), wid, 0, 0, 0);
 	gtk_widget_grab_default (wid);
 	g_signal_connect (G_OBJECT (wid), "clicked", G_CALLBACK (gtkutil_destroy), about);
 

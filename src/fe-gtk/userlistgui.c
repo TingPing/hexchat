@@ -425,7 +425,7 @@ userlist_dnd_drop (GtkTreeView *widget, GdkDragContext *context,
 		return;
 	gtk_tree_model_get (model, &iter, COL_USER, &user, -1);
 
-	mg_dnd_drop_file (current_sess, user->nick, selection_data->data);
+	mg_dnd_drop_file (current_sess, user->nick, (char *)gtk_selection_data_get_data (selection_data));
 }
 
 static gboolean

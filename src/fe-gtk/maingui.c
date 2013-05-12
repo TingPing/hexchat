@@ -293,7 +293,7 @@ fe_set_tab_color (struct session *sess, int col)
 static void
 mg_set_myself_away (session_gui *gui, gboolean away)
 {
-	gtk_label_set_attributes (GTK_LABEL (GTK_BIN (gui->nick_label)->child),
+	gtk_label_set_attributes (GTK_LABEL (gtk_bin_get_child (GTK_BIN (gui->nick_label))),
 									  away ? away_list : NULL);
 }
 
@@ -649,16 +649,16 @@ mg_unpopulate (session *sess)
 	res = sess->res;
 
 	res->input_text = strdup (SPELL_ENTRY_GET_TEXT (gui->input_box));
-	res->topic_text = strdup (GTK_ENTRY (gui->topic_entry)->text);
-	res->limit_text = strdup (GTK_ENTRY (gui->limit_entry)->text);
-	res->key_text = strdup (GTK_ENTRY (gui->key_entry)->text);
+	res->topic_text = strdup (gtk_entry_get_text (GTK_ENTRY (gui->topic_entry)));
+	res->limit_text = strdup (gtk_entry_get_text (GTK_ENTRY (gui->limit_entry)));
+	res->key_text = strdup (gtk_entry_get_text (GTK_ENTRY (gui->key_entry)));
 	if (gui->laginfo)
 		res->lag_text = strdup (gtk_label_get_text (GTK_LABEL (gui->laginfo)));
 	if (gui->throttleinfo)
 		res->queue_text = strdup (gtk_label_get_text (GTK_LABEL (gui->throttleinfo)));
 
 	for (i = 0; i < NUM_FLAG_WIDS - 1; i++)
-		res->flag_wid_state[i] = GTK_TOGGLE_BUTTON (gui->flag_wid[i])->active;
+		res->flag_wid_state[i] = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (gui->flag_wid[i]));
 
 	res->old_ul_value = userlist_get_value (gui->user_tree);
 	if (gui->lagometer)
@@ -740,9 +740,9 @@ mg_set_topic_tip (session *sess)
 			add_tip (sess->gui->topic_entry, _("No topic is set"));
 		break;
 	default:
-		if (GTK_ENTRY (sess->gui->topic_entry)->text &&
-			 GTK_ENTRY (sess->gui->topic_entry)->text[0])
-			add_tip (sess->gui->topic_entry, GTK_ENTRY (sess->gui->topic_entry)->text);
+		if (gtk_entry_get_text (GTK_ENTRY (sess->gui->topic_entry)) &&
+			 gtk_entry_get_text (GTK_ENTRY (sess->gui->topic_entry))[0])
+			add_tip (sess->gui->topic_entry, (char *)gtk_entry_get_text (GTK_ENTRY (sess->gui->topic_entry)));
 		else
 			add_tip (sess->gui->topic_entry, NULL);
 	}
@@ -973,14 +973,14 @@ mg_populate (session *sess)
 		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (gui->lagometer),
 												 res->lag_value);
 		if (res->lag_tip)
-			add_tip (sess->gui->lagometer->parent, res->lag_tip);
+			add_tip (gtk_widget_get_parent (sess->gui->lagometer), res->lag_tip);
 	}
 	if (gui->throttlemeter)
 	{
 		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (gui->throttlemeter),
 												 res->queue_value);
 		if (res->queue_tip)
-			add_tip (sess->gui->throttlemeter->parent, res->queue_tip);
+			add_tip (gtk_widget_get_parent (sess->gui->throttlemeter), res->queue_tip);
 	}
 
 	/* did this tab have a connecting graph? restore it.. */
@@ -991,7 +991,7 @@ mg_populate (session *sess)
 	}
 
 	/* menu items */
-	GTK_CHECK_MENU_ITEM (gui->menu_item[MENU_ID_AWAY])->active = sess->server->is_away;
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (gui->menu_item[MENU_ID_AWAY]), sess->server->is_away);
 	gtk_widget_set_sensitive (gui->menu_item[MENU_ID_AWAY], sess->server->connected);
 	gtk_widget_set_sensitive (gui->menu_item[MENU_ID_JOIN], sess->server->end_of_motd);
 	gtk_widget_set_sensitive (gui->menu_item[MENU_ID_DISCONNECT],
@@ -1232,7 +1232,7 @@ mg_open_quit_dialog (gboolean minimize_button)
 	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 	gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
 
-	dialog_vbox1 = GTK_DIALOG (dialog)->vbox;
+	dialog_vbox1 = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
 	gtk_widget_show (dialog_vbox1);
 
 	table1 = gtk_table_new (2, 2, FALSE);
@@ -1269,7 +1269,7 @@ mg_open_quit_dialog (gboolean minimize_button)
 	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
 	gtk_misc_set_alignment (GTK_MISC (label), 0, 0.5);
 
-	dialog_action_area1 = GTK_DIALOG (dialog)->action_area;
+	dialog_action_area1 = gtk_dialog_get_action_area (GTK_DIALOG (dialog));
 	gtk_widget_show (dialog_action_area1);
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1),
 										GTK_BUTTONBOX_END);
@@ -1296,12 +1296,12 @@ mg_open_quit_dialog (gboolean minimize_button)
 	switch (gtk_dialog_run (GTK_DIALOG (dialog)))
 	{
 	case 0:
-		if (GTK_TOGGLE_BUTTON (checkbutton1)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton1)))
 			prefs.hex_gui_quit_dialog = 0;
 		hexchat_exit ();
 		break;
 	case 1: /* minimize to tray */
-		if (GTK_TOGGLE_BUTTON (checkbutton1)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton1)))
 		{
 			prefs.hex_gui_tray_close = 1;
 			/*prefs.hex_gui_quit_dialog = 0;*/
@@ -1465,7 +1465,7 @@ mg_markup_item (GtkWidget *menu, char *text, int arg)
 	GtkWidget *item;
 
 	item = gtk_menu_item_new_with_label ("");
-	gtk_label_set_markup (GTK_LABEL (GTK_BIN (item)->child), text);
+	gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child (GTK_BIN (item))), text);
 	g_signal_connect (G_OBJECT (item), "activate",
 							G_CALLBACK (mg_color_insert), GINT_TO_POINTER (arg));
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
@@ -1531,7 +1531,7 @@ mg_set_guint8 (GtkCheckMenuItem *item, guint8 *setting)
 	guint8 logging = sess->text_logging;
 
 	*setting = SET_OFF;
-	if (item->active)
+	if (gtk_check_menu_item_get_active (item))
 		*setting = SET_ON;
 
 	/* has the logging setting changed? */
@@ -1593,7 +1593,7 @@ mg_create_tabmenu (session *sess, GdkEventButton *event, chan *ch)
 		g_free (name);
 
 		item = gtk_menu_item_new_with_label ("");
-		gtk_label_set_markup (GTK_LABEL (GTK_BIN (item)->child), buf);
+		gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child (GTK_BIN (item))), buf);
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 		gtk_widget_show (item);
 
@@ -1696,7 +1696,7 @@ mg_dialog_dnd_drop (GtkWidget * widget, GdkDragContext * context, gint x,
 {
 	if (current_sess->type == SESS_DIALOG)
 		/* sess->channel is really the nickname of dialogs */
-		mg_dnd_drop_file (current_sess, current_sess->channel, selection_data->data);
+		mg_dnd_drop_file (current_sess, current_sess->channel, (char *)gtk_selection_data_get_data (selection_data));
 }
 
 /* add a tabbed channel */
@@ -1787,7 +1787,7 @@ mg_topic_cb (GtkWidget *entry, gpointer userdata)
 
 	if (sess->channel[0] && sess->server->connected && sess->type == SESS_CHANNEL)
 	{
-		text = GTK_ENTRY (entry)->text;
+		text = (char *)gtk_entry_get_text (GTK_ENTRY (entry));
 		if (text[0] == 0)
 			text = NULL;
 		sess->server->p_topic (sess->server, sess->channel, text);
@@ -1929,7 +1929,7 @@ mg_change_flag (GtkWidget * wid, session *sess, char flag)
 	mode[2] = '\0';
 	if (serv->connected && sess->channel[0])
 	{
-		if (GTK_TOGGLE_BUTTON (wid)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (wid)))
 			mode[0] = '+';
 		else
 			mode[0] = '-';
@@ -1947,7 +1947,7 @@ flagl_hit (GtkWidget * wid, struct session *sess)
 	const char *limit_str;
 	server *serv = sess->server;
 
-	if (GTK_TOGGLE_BUTTON (wid)->active)
+	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (wid)))
 	{
 		if (serv->connected && sess->channel[0])
 		{
@@ -1978,7 +1978,7 @@ flagk_hit (GtkWidget * wid, struct session *sess)
 		snprintf (modes, sizeof (modes), "-k %s", 
 			  gtk_entry_get_text (GTK_ENTRY (sess->gui->key_entry)));
 
-		if (GTK_TOGGLE_BUTTON (wid)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (wid)))
 			modes[0] = '+';
 
 		serv->p_mode (serv, sess->channel, modes);
@@ -2137,7 +2137,7 @@ mg_dialog_button_cb (GtkWidget *wid, char *cmd)
 	if (!current_sess)
 		return;
 
-	topic = (char *)(GTK_ENTRY (current_sess->gui->topic_entry)->text);
+	topic = (char *)(gtk_entry_get_text (GTK_ENTRY (current_sess->gui->topic_entry)));
 	topic = strrchr (topic, '@');
 	if (topic)
 		host = topic + 1;
@@ -2665,17 +2665,17 @@ mg_place_userlist_and_chanview_real (session_gui *gui, GtkWidget *userlist, GtkW
 	int unref_chanview = FALSE;
 
 	/* first, remove userlist/treeview from their containers */
-	if (userlist && userlist->parent)
+	if (userlist && gtk_widget_get_parent (userlist))
 	{
 		g_object_ref (userlist);
-		gtk_container_remove (GTK_CONTAINER (userlist->parent), userlist);
+		gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (userlist)), userlist);
 		unref_userlist = TRUE;
 	}
 
-	if (chanview && chanview->parent)
+	if (chanview && gtk_widget_get_parent (chanview))
 	{
 		g_object_ref (chanview);
-		gtk_container_remove (GTK_CONTAINER (chanview->parent), chanview);
+		gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (chanview)), chanview);
 		unref_chanview = TRUE;
 	}
 
@@ -3295,7 +3295,7 @@ fe_update_mode_buttons (session *sess, char mode, char sign)
 			if (!sess->gui->is_tab || sess == current_tab)
 			{
 				ignore_chanmode = TRUE;
-				if (GTK_TOGGLE_BUTTON (sess->gui->flag_wid[i])->active != state)
+				if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sess->gui->flag_wid[i])) != state)
 					gtk_toggle_button_set_active (
 							GTK_TOGGLE_BUTTON (sess->gui->flag_wid[i]), state);
 				ignore_chanmode = FALSE;
@@ -3339,7 +3339,7 @@ fe_set_away (server *serv)
 		{
 			if (!sess->gui->is_tab || sess == current_tab)
 			{
-				GTK_CHECK_MENU_ITEM (sess->gui->menu_item[MENU_ID_AWAY])->active = serv->is_away;
+				gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sess->gui->menu_item[MENU_ID_AWAY]), serv->is_away);
 				/* gray out my nickname */
 				mg_set_myself_away (sess->gui, serv->is_away);
 			}
@@ -3552,9 +3552,9 @@ is_child_of (GtkWidget *widget, GtkWidget *parent)
 {
 	while (widget)
 	{
-		if (widget->parent == parent)
+		if (gtk_widget_get_parent (widget) == parent)
 			return TRUE;
-		widget = widget->parent;
+		widget = gtk_widget_get_parent (widget);
 	}
 	return FALSE;
 }
@@ -3565,7 +3565,7 @@ mg_handle_drop (GtkWidget *widget, int y, int *pos, int *other_pos)
 	int height;
 	session_gui *gui = current_sess->gui;
 
-	gdk_drawable_get_size (widget->window, NULL, &height);
+	gdk_drawable_get_size (gtk_widget_get_window (widget), NULL, &height);
 
 	if (y < height / 2)
 	{
@@ -3678,7 +3678,7 @@ mg_drag_drop_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, guint
 	if (!mg_is_gui_target (context))
 		return FALSE;
 
-	switch (context->action)
+	switch (gdk_drag_context_get_selected_action (context))
 	{
 	case GDK_ACTION_MOVE:
 		/* from userlist */
@@ -3720,20 +3720,20 @@ mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, gui
 		oy = widget->allocation.y;
 		width = widget->allocation.width;
 		height = widget->allocation.height;
-		draw = widget->window;
+		draw = gtk_widget_get_window (widget);
 	}
 	else
 	{
 		ox = oy = 0;
-		gdk_drawable_get_size (widget->window, &width, &height);
-		draw = widget->window;
+		gdk_drawable_get_size (gtk_widget_get_window (widget), &width, &height);
+		draw = gtk_widget_get_window (widget);
 	}
 
 	val.subwindow_mode = GDK_INCLUDE_INFERIORS;
 	val.graphics_exposures = 0;
 	val.function = GDK_XOR;
 
-	gc = gdk_gc_new_with_values (widget->window, &val, GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW | GDK_GC_FUNCTION);
+	gc = gdk_gc_new_with_values (gtk_widget_get_window (widget), &val, GDK_GC_EXPOSURES | GDK_GC_SUBWINDOW | GDK_GC_FUNCTION);
 	col.red = rand() % 0xffff;
 	col.green = rand() % 0xffff;
 	col.blue = rand() % 0xffff;

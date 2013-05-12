@@ -482,10 +482,10 @@ servlist_update_from_entry (char **str, GtkWidget *entry)
 	if (*str)
 		free (*str);
 
-	if (GTK_ENTRY (entry)->text[0] == 0)
+	if (gtk_entry_get_text (GTK_ENTRY (entry))[0] == 0)
 		*str = NULL;
 	else
-		*str = strdup (GTK_ENTRY (entry)->text);
+		*str = strdup (gtk_entry_get_text (GTK_ENTRY (entry)));
 }
 
 static void
@@ -659,20 +659,20 @@ servlist_savegui (void)
 	char *sp;
 
 	/* check for blank username, ircd will not allow this */
-	if (GTK_ENTRY (entry_guser)->text[0] == 0)
+	if (gtk_entry_get_text (GTK_ENTRY (entry_guser))[0] == 0)
 		return 1;
 
-	/* if (GTK_ENTRY (entry_greal)->text[0] == 0)
+	/* if (gtk_entry_get_text (GTK_ENTRY (entry_greal))[0] == 0)
 		return 1; */
 
-	strcpy (prefs.hex_irc_nick1, GTK_ENTRY (entry_nick1)->text);
-	strcpy (prefs.hex_irc_nick2, GTK_ENTRY (entry_nick2)->text);
-	strcpy (prefs.hex_irc_nick3, GTK_ENTRY (entry_nick3)->text);
-	strcpy (prefs.hex_irc_user_name, GTK_ENTRY (entry_guser)->text);
+	strcpy (prefs.hex_irc_nick1, gtk_entry_get_text (GTK_ENTRY (entry_nick1)));
+	strcpy (prefs.hex_irc_nick2, gtk_entry_get_text (GTK_ENTRY (entry_nick2)));
+	strcpy (prefs.hex_irc_nick3, gtk_entry_get_text (GTK_ENTRY (entry_nick3)));
+	strcpy (prefs.hex_irc_user_name, gtk_entry_get_text (GTK_ENTRY (entry_guser)));
 	sp = strchr (prefs.hex_irc_user_name, ' ');
 	if (sp)
 		sp[0] = 0;	/* spaces will break the login */
-	/* strcpy (prefs.hex_irc_real_name, GTK_ENTRY (entry_greal)->text); */
+	/* strcpy (prefs.hex_irc_real_name, gtk_entry_get_text (GTK_ENTRY (entry_greal))); */
 	servlist_save ();
 	save_config (); /* For nicks stored in hexchat.conf */
 
@@ -1121,13 +1121,13 @@ servlist_check_cb (GtkWidget *but, gpointer num_p)
 	if ((1 << num) == FLAG_CYCLE || (1 << num) == FLAG_USE_PROXY)
 	{
 		/* these ones are reversed, so it's compat with 2.0.x */
-		if (GTK_TOGGLE_BUTTON (but)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (but)))
 			selected_net->flags &= ~(1 << num);
 		else
 			selected_net->flags |= (1 << num);
 	} else
 	{
-		if (GTK_TOGGLE_BUTTON (but)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (but)))
 			selected_net->flags |= (1 << num);
 		else
 			selected_net->flags &= ~(1 << num);
@@ -1135,7 +1135,7 @@ servlist_check_cb (GtkWidget *but, gpointer num_p)
 
 	if ((1 << num) == FLAG_USE_GLOBAL)
 	{
-		if (GTK_TOGGLE_BUTTON (but)->active)
+		if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (but)))
 		{
 			gtk_widget_hide (edit_label_nick);
 			gtk_widget_hide (edit_entry_nick);
@@ -1324,7 +1324,7 @@ servlist_combo_cb (GtkEntry *entry, gpointer userdata)
 	{
 		if (selected_net->encoding)
 			free (selected_net->encoding);
-		selected_net->encoding = strdup (entry->text);
+		selected_net->encoding = strdup (gtk_entry_get_text (entry));
 	}
 }
 
@@ -1357,7 +1357,7 @@ servlist_create_charsetcombo (void)
 		gtk_combo_box_append_text (GTK_COMBO_BOX (cb), (char *)pages[i]);
 		i++;
 	}
-	g_signal_connect (G_OBJECT (GTK_BIN (cb)->child), "changed",
+	g_signal_connect (G_OBJECT (gtk_bin_get_child (GTK_BIN (cb))), "changed",
 							G_CALLBACK (servlist_combo_cb), NULL);
 
 	return cb;
@@ -1388,7 +1388,7 @@ servlist_create_nstypecombo (void)
 static void
 no_servlist (GtkWidget * igad, gpointer serv)
 {
-	if (GTK_TOGGLE_BUTTON (igad)->active)
+	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (igad)))
 		prefs.hex_gui_slist_skip = TRUE;
 	else
 		prefs.hex_gui_slist_skip = FALSE;
@@ -1397,7 +1397,7 @@ no_servlist (GtkWidget * igad, gpointer serv)
 static void
 fav_servlist (GtkWidget * igad, gpointer serv)
 {
-	if (GTK_TOGGLE_BUTTON (igad)->active)
+	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (igad)))
 		prefs.hex_gui_slist_fav = TRUE;
 	else
 		prefs.hex_gui_slist_fav = FALSE;
@@ -1554,7 +1554,7 @@ servlist_open_edit (GtkWidget *parent, ircnet *net)
 
 	comboboxentry_nstypes = servlist_create_nstypecombo ();
 	ignore_changed = TRUE;
-	gtk_entry_set_text (GTK_ENTRY (GTK_BIN (comboboxentry_nstypes)->child), net->nstype ? nstypes[net->nstype] : "Default");
+	gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (comboboxentry_nstypes))), net->nstype ? nstypes[net->nstype] : "Default");
 	ignore_changed = FALSE;
 	gtk_widget_show (comboboxentry_nstypes);
 	gtk_table_attach (GTK_TABLE (table3), comboboxentry_nstypes, 2, 3, 18, 19,
@@ -1582,7 +1582,7 @@ servlist_open_edit (GtkWidget *parent, ircnet *net)
 
 	comboboxentry_charset = servlist_create_charsetcombo ();
 	ignore_changed = TRUE;
-	gtk_entry_set_text (GTK_ENTRY (GTK_BIN (comboboxentry_charset)->child), net->encoding ? net->encoding : "System default");
+	gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (comboboxentry_charset))), net->encoding ? net->encoding : "System default");
 	ignore_changed = FALSE;
 	gtk_widget_show (comboboxentry_charset);
 	gtk_table_attach (GTK_TABLE (table3), comboboxentry_charset, 2, 3, 22, 23,

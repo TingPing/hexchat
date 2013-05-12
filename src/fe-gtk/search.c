@@ -111,28 +111,28 @@ search_entry_cb (GtkWidget * entry, session * sess)
 static void
 search_caseign_cb (GtkToggleButton * but, session * sess)
 {
-	prefs.hex_text_search_case_match = (but->active)? 1: 0;
+	prefs.hex_text_search_case_match = gtk_toggle_button_get_active (but);
 	save_config();
 }
 
 static void
 search_dirbwd_cb (GtkToggleButton * but, session * sess)
 {
-	prefs.hex_text_search_backward = (but->active)? 1: 0;
+	prefs.hex_text_search_backward = gtk_toggle_button_get_active (but);
 	save_config();
 }
 
 static void
 search_regexp_cb (GtkToggleButton * but, session * sess)
 {
-	prefs.hex_text_search_regexp = (but->active)? 1: 0;
+	prefs.hex_text_search_regexp = gtk_toggle_button_get_active (but);
 	save_config();
 }
 
 static void
 search_highlight_cb (GtkToggleButton * but, session * sess)
 {
-	prefs.hex_text_search_highlight_all = (but->active)? 1: 0;
+	prefs.hex_text_search_highlight_all = gtk_toggle_button_get_active (but);
 	save_config();
 	search_search (sess, NULL);
 }
@@ -180,7 +180,7 @@ search_open (session * sess)
 
 	/* Second line:  X Match case */
 	wid = gtk_check_button_new_with_mnemonic (_("_Match case"));
-	GTK_TOGGLE_BUTTON (wid)->active = prefs.hex_text_search_case_match;
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (wid), prefs.hex_text_search_case_match);
 	g_signal_connect (G_OBJECT (wid), "toggled", G_CALLBACK (search_caseign_cb), sess);
 	gtk_container_add (GTK_CONTAINER (vbox), wid);
 	add_tip (wid, "Perform a case-sensitive search.");
@@ -188,7 +188,7 @@ search_open (session * sess)
 
 	/* Third line:  X Search backwards */
 	wid = gtk_check_button_new_with_mnemonic (_("Search _backwards"));
-	GTK_TOGGLE_BUTTON (wid)->active = prefs.hex_text_search_backward;
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (wid), prefs.hex_text_search_backward);
 	g_signal_connect (G_OBJECT (wid), "toggled", G_CALLBACK (search_dirbwd_cb), sess);
 	gtk_container_add (GTK_CONTAINER (vbox), wid);
 	add_tip (wid, "Search from the newest text line to the oldest.");
@@ -196,7 +196,7 @@ search_open (session * sess)
 
 	/* Fourth line:  X Highlight all */
 	wid = gtk_check_button_new_with_mnemonic (_("_Highlight all"));
-	GTK_TOGGLE_BUTTON (wid)->active = prefs.hex_text_search_highlight_all;
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (wid), prefs.hex_text_search_highlight_all);
 	g_signal_connect (G_OBJECT (wid), "toggled", G_CALLBACK (search_highlight_cb), sess);
 	gtk_container_add (GTK_CONTAINER (vbox), wid);
 	add_tip (wid, "Highlight all occurrences, and underline the current occurrence.");
@@ -204,7 +204,7 @@ search_open (session * sess)
 
 	/* Fifth line:  X Regular expression */
 	wid = gtk_check_button_new_with_mnemonic (_("R_egular expression"));
-	GTK_TOGGLE_BUTTON (wid)->active = prefs.hex_text_search_regexp;
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (wid), prefs.hex_text_search_regexp);
 	g_signal_connect (G_OBJECT (wid), "toggled", G_CALLBACK (search_regexp_cb), sess);
 	gtk_container_add (GTK_CONTAINER (vbox), wid);
 	add_tip (wid, "Regard search string as a regular expression.");

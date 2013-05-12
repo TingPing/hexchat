@@ -70,15 +70,15 @@ cv_tabs_sizealloc (GtkWidget *widget, GtkAllocation *allocation, chanview *cv)
 
 	if (cv->vertical)
 	{
-		adj = gtk_viewport_get_vadjustment (GTK_VIEWPORT (inner->parent));
-		gdk_window_get_geometry (inner->parent->window, 0, 0, 0, &viewport_size, 0);
+		adj = gtk_viewport_get_vadjustment (GTK_VIEWPORT (gtk_widget_get_parent (inner)));
+		gdk_window_get_geometry (gtk_widget_get_parent_window (inner), 0, 0, 0, &viewport_size, 0);
 	} else
 	{
-		adj = gtk_viewport_get_hadjustment (GTK_VIEWPORT (inner->parent));
-		gdk_window_get_geometry (inner->parent->window, 0, 0, &viewport_size, 0, 0);
+		adj = gtk_viewport_get_hadjustment (GTK_VIEWPORT (gtk_widget_get_parent (inner)));
+		gdk_window_get_geometry (gtk_widget_get_parent_window (inner), 0, 0, &viewport_size, 0, 0);
 	}
 
-	if (adj->upper <= viewport_size)
+	if (gtk_adjustment_get_upper (adj) <= viewport_size)
 	{
 		gtk_widget_hide (((tabview *)cv)->b1);
 		gtk_widget_hide (((tabview *)cv)->b2);
@@ -99,7 +99,7 @@ tab_search_offset (GtkWidget *inner, gint start_offset,
 	GtkWidget *button;
 	gint found;
 
-	boxes = GTK_BOX (inner)->children;
+	boxes = gtk_container_get_children (GTK_CONTAINER (inner));
 	if (!forward && boxes)
 		boxes = g_list_last (boxes);
 
@@ -108,7 +108,7 @@ tab_search_offset (GtkWidget *inner, gint start_offset,
 		box = ((GtkBoxChild *)boxes->data)->widget;
 		boxes = (forward ? boxes->next : boxes->prev);
 
-		tabs = GTK_BOX (box)->children;
+		tabs = gtk_container_get_children (GTK_CONTAINER (box));
 		if (!forward && tabs)
 			tabs = g_list_last (tabs);
 
