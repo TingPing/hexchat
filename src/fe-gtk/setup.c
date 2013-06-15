@@ -202,6 +202,9 @@ static const setting inputbox_settings[] =
 	{ST_TOGGLE, N_("Use the Text box font and colors"), P_OFFINTNL(hex_gui_input_style),0,0,0},
 	{ST_TOGGLE, N_("Show nick box"), P_OFFINTNL(hex_gui_input_nick),0,0,1},
 	{ST_TOGGLE, N_("Show user mode icon in nick box"), P_OFFINTNL(hex_gui_input_icon),0,0,0},
+#ifdef USE_GTKSPELL
+	{ST_NUMBER,	N_("Number of lines:"), P_OFFINTNL(hex_gui_input_lines),0,0,8},
+#endif
 #ifdef HAVE_ISO_CODES /* Defined with static spelling */
 	{ST_TOGGLE, N_("Spell checking"), P_OFFINTNL(hex_gui_input_spell),0,0,1},
 	{ST_ENTRY,	N_("Dictionaries to use:"), P_OFFSETNL(hex_text_spell_langs),0,0,sizeof prefs.hex_text_spell_langs},
@@ -2128,6 +2131,8 @@ setup_apply (struct hexchatprefs *pr)
 	if (DIFF (hex_gui_input_icon))
 		noapply = TRUE;
 	if (DIFF (hex_gui_input_nick))
+		noapply = TRUE;
+	if (DIFF (hex_gui_input_lines))
 		noapply = TRUE;
 	if (DIFF (hex_gui_lagometer))
 		noapply = TRUE;

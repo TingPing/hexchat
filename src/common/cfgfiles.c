@@ -426,6 +426,9 @@ const struct prefs vars[] =
 	{"gui_focus_omitalerts", P_OFFINT (hex_gui_focus_omitalerts), TYPE_BOOL},
 	{"gui_hide_menu", P_OFFINT (hex_gui_hide_menu), TYPE_BOOL},
 	{"gui_input_icon", P_OFFINT (hex_gui_input_icon), TYPE_BOOL},
+#ifdef USE_GTKSPELL
+	{"gui_input_lines", P_OFFINT (hex_gui_input_lines), TYPE_INT},
+#endif
 	{"gui_input_nick", P_OFFINT (hex_gui_input_nick), TYPE_BOOL},
 	{"gui_input_spell", P_OFFINT (hex_gui_input_spell), TYPE_BOOL},
 	{"gui_input_style", P_OFFINT (hex_gui_input_style), TYPE_BOOL},
@@ -766,6 +769,9 @@ load_default_config(void)
 	prefs.hex_gui_chanlist_minusers = 5;
 	prefs.hex_gui_dialog_height = 256;
 	prefs.hex_gui_dialog_width = 500;
+#ifdef USE_GTKSPELL
+	prefs.hex_gui_input_lines = 3;
+#endif
 	prefs.hex_gui_lagometer = 1;
 	prefs.hex_gui_lang = get_default_language();
 	prefs.hex_gui_pane_left_size = 128;		/* with treeview icons we need a bit bigger space */

@@ -2818,6 +2818,7 @@ mg_create_entry (session *sess, GtkWidget *box)
 	GtkWidget *hbox, *but, *entry;
 #ifdef USE_GTKSPELL
 	GtkWidget *sw;
+	int input_height;
 #endif
 	session_gui *gui = sess->gui;
 
@@ -2843,11 +2844,26 @@ mg_create_entry (session *sess, GtkWidget *box)
 		gtkspell_new_attach (GTK_TEXT_VIEW (entry), NULL, NULL);
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
-	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
-													 GTK_SHADOW_IN);
-	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
-												GTK_POLICY_NEVER,
-												GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw), GTK_SHADOW_IN);
+
+	/* Get height of line to multiply by how many lines we want */
+	pango_layout_get_pixel_size (gtk_widget_create_pango_layout (entry, "X|"), NULL, &input_height);
+	if (!prefs.hex_gui_input_lines)
+		prefs.hex_gui_input_lines = 1;
+	input_height *= prefs.hex_gui_input_lines;
+
+	/* Scrollbars don't work so well on a single line */
+	if (prefs.hex_gui_input_lines == 1)
+		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+	else
+		gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+	gtk_widget_set_size_request (sw, -1, input_height);
+	gtk_text_view_set_border_window_size(GTK_TEXT_VIEW (entry), GTK_TEXT_WINDOW_TOP, 3);
+	gtk_text_view_set_border_window_size(GTK_TEXT_VIEW (entry), GTK_TEXT_WINDOW_BOTTOM, 3);
+	gtk_text_view_set_border_window_size(GTK_TEXT_VIEW (entry), GTK_TEXT_WINDOW_LEFT, 3);
+	gtk_text_view_set_border_window_size(GTK_TEXT_VIEW (entry), GTK_TEXT_WINDOW_RIGHT, 3);
+
 	gtk_container_add (GTK_CONTAINER (sw), entry);
 	gtk_container_add (GTK_CONTAINER (hbox), sw);
 #else
