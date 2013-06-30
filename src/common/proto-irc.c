@@ -1358,6 +1358,7 @@ handle_message_tag_time (const char *time, message_tags_data *tags_data)
 			return;
 
 		t.tm_year -= 1900;
+		t.tm_mon -= 1;
 		t.tm_isdst = 0; /* day light saving time */
 
 		tags_data->timestamp = mktime (&t);
@@ -1367,6 +1368,9 @@ handle_message_tag_time (const char *time, message_tags_data *tags_data)
 			tags_data->timestamp = 0;
 			return;
 		}
+
+		/* get rid of the local time (mktime() receives a local calendar time) */
+		tags_data->timestamp -= timezone;
 	}
 	else
 	{
