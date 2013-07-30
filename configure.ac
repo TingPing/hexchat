@@ -8,8 +8,9 @@ AC_COPYRIGHT([Copyright (C) 1998-2010 Peter Zelezny])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([configure.ac])
 
-AM_INIT_AUTOMAKE([1.11 dist-bzip2 subdir-objects no-define foreign])
+AC_CONFIG_MACRO_DIR([m4])
 
+AM_INIT_AUTOMAKE([1.11 dist-bzip2 subdir-objects no-define foreign])
 AM_SILENT_RULES([yes])
 
 AC_USE_SYSTEM_EXTENSIONS
@@ -169,7 +170,7 @@ AC_ARG_ENABLE(shm,
 
 AC_ARG_ENABLE(spell,
 	[AS_HELP_STRING([--enable-spell=type],[enable spelling type: none static libsexy gtkspell])],
-		  spell=$enableval, spell=static)
+		  spell=$enableval, spell=libsexy)
 
 AC_ARG_ENABLE(ntlm,
 	[AS_HELP_STRING([--enable-ntlm],[enable Microsoft\'s NTLM auth (libntlm) library support (default: no)])],
