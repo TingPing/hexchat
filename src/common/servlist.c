@@ -67,12 +67,6 @@ static const struct defaultserver def[] =
 	{0,			"eu.afternet.org"},
 
 	{"Aitvaras",	0},
-#ifdef USE_IPV6
-#ifdef USE_OPENSSL
-	{0,			"irc6.ktu.lt/+7668"},
-#endif
-	{0,			"irc6.ktu.lt/7666"},
-#endif
 #ifdef USE_OPENSSL
 	{0,			"irc.data.lt/+6668"},
 	{0,			"irc.omnitel.net/+6668"},

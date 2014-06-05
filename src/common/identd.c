@@ -25,9 +25,7 @@
 #include "text.h"
 
 static int identd_is_running = FALSE;
-#ifdef USE_IPV6
 static int identd_ipv6_is_running = FALSE;
-#endif
 
 static int
 identd (char *username)
@@ -104,7 +102,6 @@ identd (char *username)
 	return 0;
 }
 
-#ifdef USE_IPV6
 static int
 identd_ipv6 (char *username)
 {
@@ -175,22 +172,19 @@ identd_ipv6 (char *username)
 
 	return 0;
 }
-#endif
 
 void
 identd_start (char *username)
 {
 	DWORD tid;
-
-#ifdef USE_IPV6
 	DWORD tidv6;
+
 	if (identd_ipv6_is_running == FALSE)
 	{
 		identd_ipv6_is_running = TRUE;
 		CloseHandle (CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) identd_ipv6,
 						 strdup (username), 0, &tidv6));
 	}
-#endif
 
 	if (identd_is_running == FALSE)
 	{

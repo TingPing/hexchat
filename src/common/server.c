@@ -911,12 +911,10 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		closesocket (serv->sok4);
 		if (serv->proxy_sok4 != -1)
 			closesocket (serv->proxy_sok4);
-#ifdef USE_IPV6
 		if (serv->sok6 != -1)
 			closesocket (serv->sok6);
 		if (serv->proxy_sok6 != -1)
 			closesocket (serv->proxy_sok6);
-#endif
 		EMIT_SIGNAL (XP_TE_UKNHOST, sess, NULL, NULL, NULL, NULL, 0);
 		if (!servlist_cycle (serv))
 			if (prefs.hex_net_auto_reconnectonfail)
@@ -928,12 +926,10 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 		closesocket (serv->sok4);
 		if (serv->proxy_sok4 != -1)
 			closesocket (serv->proxy_sok4);
-#ifdef USE_IPV6
 		if (serv->sok6 != -1)
 			closesocket (serv->sok6);
 		if (serv->proxy_sok6 != -1)
 			closesocket (serv->proxy_sok6);
-#endif
 		EMIT_SIGNAL (XP_TE_CONNFAIL, sess, errorstring (atoi (tbuf)), NULL,
 						 NULL, NULL, 0);
 		if (!servlist_cycle (serv))
@@ -987,7 +983,6 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 #else
 		serv->sok = atoi (tbuf);
 #endif
-#ifdef USE_IPV6
 		/* close the one we didn't end up using */
 		if (serv->sok == serv->sok4)
 			closesocket (serv->sok6);
@@ -1000,7 +995,6 @@ server_read_child (GIOChannel *source, GIOCondition condition, server *serv)
 			else
 				closesocket (serv->proxy_sok4);
 		}
-#endif
 		server_connect_success (serv);
 		break;
 	case '5':						  /* prefs ip discovered */
