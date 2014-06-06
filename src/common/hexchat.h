@@ -22,18 +22,12 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
 
 #include <time.h>			/* need time_t */
 
 #ifndef HEXCHAT_H
 #define HEXCHAT_H
-
-#ifdef USE_OPENSSL
-#ifdef __APPLE__
-#define __AVAILABILITYMACROS__
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
-#endif
-#endif
 
 #include "history.h"
 
@@ -51,10 +45,6 @@
 #define INCLUDE_PROTOTYPES 1
 #endif
 #include <socks.h>
-#endif
-
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>		  /* SSL_() */
 #endif
 
 #ifdef __EMX__						  /* for o/s 2 */
@@ -452,10 +442,10 @@ typedef struct server
 {
 	/*  server control operations (in server*.c) */
 	void (*connect)(struct server *, char *hostname, int port, int no_login);
-	void (*disconnect)(struct session *, int sendquit, int err);
+	void (*disconnect)(struct session *, int sendquit, char *err);
 	int  (*cleanup)(struct server *);
 	void (*flush_queue)(struct server *);
-	void (*auto_reconnect)(struct server *, int send_quit, int err);
+	void (*auto_reconnect)(struct server *, int send_quit, char *err);
 	/* irc protocol functions (in proto*.c) */
 	void (*p_inline)(struct server *, char *buf, int len);
 	void (*p_invite)(struct server *, char *channel, char *nick);
@@ -491,26 +481,11 @@ typedef struct server
 	int (*p_raw)(struct server *, char *raw);
 	int (*p_cmp)(const char *s1, const char *s2);
 
+	GSocketConnection *conn;
+	gchar in_buf[2050];
+
 	int port;
-	int sok;					/* is equal to sok4 or sok6 (the one we are using) */
-	int sok4;					/* tcp4 socket */
-	int sok6;					/* tcp6 socket */
-	int proxy_type;
-	int proxy_sok;				/* Additional information for MS Proxy beast */
-	int proxy_sok4;
-	int proxy_sok6;
-	struct msproxy_state_t msp_state;
 	int id;					/* unique ID number (for plugin API) */
-#ifdef USE_OPENSSL
-	SSL *ssl;
-	int ssl_do_connect_tag;
-#else
-	void *ssl;
-#endif
-	int childread;
-	int childwrite;
-	int childpid;
-	int iotag;
 	int recondelay_tag;				/* reconnect delay timeout */
 	int joindelay_tag;				/* waiting before we send JOIN */
 	char hostname[128];				/* real ip number */
@@ -593,10 +568,8 @@ typedef struct server
 	unsigned int sasl_mech;			/* mechanism for sasl auth */
 	unsigned int sent_saslauth:1;	/* have sent AUTHENICATE yet */
 	unsigned int sent_capend:1;	/* have sent CAP END yet */
-#ifdef USE_OPENSSL
 	unsigned int use_ssl:1;				  /* is server SSL capable? */
 	unsigned int accept_invalid_cert:1;/* ignore result of server's cert. verify */
-#endif
 } server;
 
 typedef int (*cmd_callback) (struct session * sess, char *tbuf, char *word[],

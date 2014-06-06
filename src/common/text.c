@@ -1339,11 +1339,6 @@ static char * const pevt_servertext_help[] = {
 	N_("Raw Numeric or Identifier")
 };
 
-static char * const pevt_sslmessage_help[] = {
-	N_("Text"),
-	N_("Server Name")
-};
-
 static char * const pevt_invited_help[] = {
 	N_("Channel Name"),
 	N_("Nick of person who invited you"),
@@ -1368,10 +1363,6 @@ static char * const pevt_connect_help[] = {
 	N_("Host"),
 	N_("IP"),
 	N_("Port"),
-};
-
-static char * const pevt_sconnect_help[] = {
-	"PID"
 };
 
 static char * const pevt_generic_nick_help[] = {

@@ -50,7 +50,6 @@
 #include "fe.h"
 #include "outbound.h"
 #include "inbound.h"
-#include "network.h"
 #include "plugin.h"
 #include "server.h"
 #include "text.h"
@@ -493,8 +492,10 @@ dcc_write_chat (char *nick, char *text)
 	if (dcc && dcc->dccstat == STAT_ACTIVE)
 	{
 		len = strlen (text);
-		tcp_send_real (NULL, dcc->sok, dcc->serv->encoding, dcc->serv->using_irc,
+#if 0
+		tcp_send_real (dcc->sok, dcc->serv->encoding, dcc->serv->using_irc,
 							text, len);
+#endif
 		send (dcc->sok, "\n", 1, 0);
 		dcc->size += len;
 		fe_dcc_update (dcc);
@@ -1284,7 +1285,7 @@ dcc_http_proxy_traverse (GIOChannel *source, GIOCondition condition, struct DCC 
 	if (proxy->phase == 0)
 	{
 		char buf[256];
-		char auth_data[128];
+		char *auth_data;
 		char auth_data2[68];
 		int n, n2;
 
@@ -1294,8 +1295,9 @@ dcc_http_proxy_traverse (GIOChannel *source, GIOCondition condition, struct DCC 
 		{
 			n2 = snprintf (auth_data2, sizeof (auth_data2), "%s:%s",
 							prefs.hex_net_proxy_user, prefs.hex_net_proxy_pass);
-			base64_encode (auth_data, auth_data2, n2);
+			auth_data = g_base64_encode (auth_data2, n2);
 			n += snprintf (buf+n, sizeof (buf)-n, "Proxy-Authorization: Basic %s\r\n", auth_data);
+			g_free (auth_data);
 		}
 		n += snprintf (buf+n, sizeof (buf)-n, "\r\n");
 		proxy->buffersize = n;
@@ -1689,7 +1691,9 @@ dcc_listen_init (struct DCC *dcc, session *sess)
 	memset (&SAddr, 0, sizeof (struct sockaddr_in));
 
 	len = sizeof (SAddr);
+#if 0
 	getsockname (dcc->serv->sok, (struct sockaddr *) &SAddr, &len);
+#endif
 
 	SAddr.sin_family = AF_INET;
 

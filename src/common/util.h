@@ -33,6 +33,13 @@
 #ifndef HEXCHAT_UTIL_H
 #define HEXCHAT_UTIL_H
 
+#ifdef USE_OPENSSL
+#ifdef __APPLE__
+#define __AVAILABILITYMACROS__
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#endif
+#endif
+
 #define rfc_tolower(c) (rfc_tolowertab[(unsigned char)(c)])
 
 extern const unsigned char rfc_tolowertab[];
@@ -81,4 +88,6 @@ char *encode_sasl_pass_aes (char *user, char *pass, char *data);
 char *challengeauth_response (char *username, char *password, char *challenge);
 size_t strftime_validated (char *dest, size_t destsize, const char *format, const struct tm *time);
 size_t strftime_utf8 (char *dest, size_t destsize, const char *format, time_t time);
+char *net_ip (guint32 addr);
+char *hexchat_proxy_uri (void);
 #endif

@@ -19,7 +19,6 @@
 
 /* simple identd server for HexChat under Win32 */
 
-#include "inet.h"
 #include "hexchat.h"
 #include "hexchatc.h"
 #include "text.h"

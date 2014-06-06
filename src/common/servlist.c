@@ -635,11 +635,9 @@ servlist_connect (session *sess, ircnet *net, gboolean join)
 
 	serv->dont_use_proxy = (net->flags & FLAG_USE_PROXY) ? FALSE : TRUE;
 
-#ifdef USE_OPENSSL
 	serv->use_ssl = (net->flags & FLAG_USE_SSL) ? TRUE : FALSE;
 	serv->accept_invalid_cert =
 		(net->flags & FLAG_ALLOW_INVALID) ? TRUE : FALSE;
-#endif
 
 	serv->network = net;
 

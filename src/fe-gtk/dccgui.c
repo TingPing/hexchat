@@ -23,16 +23,12 @@
 #include <fcntl.h>
 #include <time.h>
 
-#define WANTSOCKET
-#define WANTARPA
-#include "../common/inet.h"
 #include "fe-gtk.h"
 
 #include "../common/hexchat.h"
 #include "../common/hexchatc.h"
 #include "../common/fe.h"
 #include "../common/util.h"
-#include "../common/network.h"
 #include "gtkutil.h"
 #include "palette.h"
 #include "maingui.h"

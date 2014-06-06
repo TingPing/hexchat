@@ -24,14 +24,13 @@
 #include <limits.h>
 #include <errno.h>
 
-#define WANTSOCKET
-#define WANTARPA
-#include "inet.h"
-
 #ifndef WIN32
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
+
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #include <time.h>
 #include <signal.h>
@@ -44,7 +43,6 @@
 #include "util.h"
 #include "fe.h"
 #include "cfgfiles.h"			  /* hexchat_fopen_file() */
-#include "network.h"				/* net_ip() */
 #include "modes.h"
 #include "notify.h"
 #include "inbound.h"
@@ -904,12 +902,12 @@ cmd_debug (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	}
 
 	list = serv_list;
-	PrintText (sess, "Server    Sock  Name\n");
+	PrintText (sess, "Server    Name\n");
 	while (list)
 	{
 		v = (struct server *) list->data;
-		sprintf (tbuf, "%p %-5d %s\n",
-					v, v->sok, v->servername);
+		sprintf (tbuf, "%p %s\n",
+					v, v->servername);
 		PrintText (sess, tbuf);
 		list = list->next;
 	}
@@ -1916,9 +1914,7 @@ cmd_gate (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	if (*server_name)
 	{
 		char *port = word[3];
-#ifdef USE_OPENSSL
 		serv->use_ssl = FALSE;
-#endif
 		server_fill_her_up (serv);
 		if (*port)
 			serv->connect (serv, server_name, atoi (port), TRUE);
@@ -3146,7 +3142,7 @@ cmd_reconnect (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		{
 			serv = list->data;
 			if (serv->connected)
-				serv->auto_reconnect (serv, TRUE, -1);
+				serv->auto_reconnect (serv, TRUE, NULL);
 			list = list->next;
 		}
 	}
@@ -3155,7 +3151,6 @@ cmd_reconnect (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	else if (*word[2])
 	{
 		int offset = 0;
-#ifdef USE_OPENSSL
 		int use_ssl = FALSE;
 
 		if (strcmp (word[2], "-ssl") == 0)
@@ -3165,18 +3160,17 @@ cmd_reconnect (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		}
 		serv->use_ssl = use_ssl;
 		serv->accept_invalid_cert = TRUE;
-#endif
 
 		if (*word[4+offset])
 			safe_strcpy (serv->password, word[4+offset], sizeof (serv->password));
 		if (*word[3+offset])
 			serv->port = atoi (word[3+offset]);
 		safe_strcpy (serv->hostname, word[2+offset], sizeof (serv->hostname));
-		serv->auto_reconnect (serv, TRUE, -1);
+		serv->auto_reconnect (serv, TRUE, NULL);
 	}
 	else
 	{
-		serv->auto_reconnect (serv, TRUE, -1);
+		serv->auto_reconnect (serv, TRUE, NULL);
 	}
 	prefs.hex_net_reconnect_delay = tmp;
 
@@ -3217,6 +3211,7 @@ cmd_send (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	if (!word[2][0])
 		return FALSE;
 
+#if 0
 	addr = dcc_get_my_address ();
 	if (addr == 0)
 	{
@@ -3236,6 +3231,7 @@ cmd_send (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		snprintf (tbuf, 512, "DCC SEND %s", word_eol[2]);
 
 	handle_command (sess, tbuf, FALSE);
+#endif
 
 	return TRUE;
 }
@@ -3293,21 +3289,17 @@ static int
 parse_irc_url (char *url, char *server_name[], char *port[], char *channel[], char *key[], int *use_ssl)
 {
 	char *co;
-#ifdef USE_OPENSSL
 	if (g_ascii_strncasecmp ("ircs://", url, 7) == 0)
 	{
 		*use_ssl = TRUE;
 		*server_name = url + 7;
 		goto urlserv;
 	}
-#endif
 
 	if (g_ascii_strncasecmp ("irc://", url, 6) == 0)
 	{
 		*server_name = url + 6;
-#ifdef USE_OPENSSL
 urlserv:
-#endif
 		/* check for port */
 		co = strchr (*server_name, ':');
 		if (co)
@@ -3356,14 +3348,12 @@ cmd_server (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	server *serv = sess->server;
 	ircnet *net = NULL;
 
-#ifdef USE_OPENSSL
 	/* BitchX uses -ssl, mIRC uses -e, let's support both */
 	if (strcmp (word[2], "-ssl") == 0 || strcmp (word[2], "-e") == 0)
 	{
 		use_ssl = TRUE;
 		offset++;	/* args move up by 1 word */
 	}
-#endif
 
 	if (!parse_irc_url (word[2 + offset], &server_name, &port, &channel, &key, &use_ssl))
 	{
@@ -3399,9 +3389,7 @@ cmd_server (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 	if (port[0] == '+')
 	{
 		port++;
-#ifdef USE_OPENSSL
 		use_ssl = TRUE;
-#endif
 	}
 
 	if (*pass)
@@ -3424,10 +3412,8 @@ cmd_server (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		}
 	}
 
-#ifdef USE_OPENSSL
 	serv->use_ssl = use_ssl;
 	serv->accept_invalid_cert = TRUE;
-#endif
 
 	/* try to connect by Network name */
 	if (servlist_connect_by_netname (sess, server_name, !is_url))
@@ -3457,10 +3443,8 @@ cmd_servchan (struct session *sess, char *tbuf, char *word[],
 {
 	int offset = 0;
 
-#ifdef USE_OPENSSL
 	if (strcmp (word[2], "-ssl") == 0)
 		offset++;
-#endif
 
 	if (*word[4 + offset])
 	{
@@ -4008,32 +3992,17 @@ const struct commands xc_cmds[] = {
 	 N_("QUIT [<reason>], disconnects from the current server")},
 	{"QUOTE", cmd_quote, 1, 0, 1,
 	 N_("QUOTE <text>, sends the text in raw form to the server")},
-#ifdef USE_OPENSSL
 	{"RECONNECT", cmd_reconnect, 0, 0, 1,
 	 N_("RECONNECT [-ssl] [<host>] [<port>] [<password>], Can be called just as /RECONNECT to reconnect to the current server or with /RECONNECT ALL to reconnect to all the open servers")},
-#else
-	{"RECONNECT", cmd_reconnect, 0, 0, 1,
-	 N_("RECONNECT [<host>] [<port>] [<password>], Can be called just as /RECONNECT to reconnect to the current server or with /RECONNECT ALL to reconnect to all the open servers")},
-#endif
 	{"RECV", cmd_recv, 1, 0, 1, N_("RECV <text>, send raw data to HexChat, as if it was received from the IRC server")},
 	{"RELOAD", cmd_reload, 0, 0, 1, N_("RELOAD <name>, reloads a plugin or script")},
 	{"SAY", cmd_say, 0, 0, 1,
 	 N_("SAY <text>, sends the text to the object in the current window")},
 	{"SEND", cmd_send, 0, 0, 1, N_("SEND <nick> [<file>]")},
-#ifdef USE_OPENSSL
 	{"SERVCHAN", cmd_servchan, 0, 0, 1,
 	 N_("SERVCHAN [-ssl] <host> <port> <channel>, connects and joins a channel")},
-#else
-	{"SERVCHAN", cmd_servchan, 0, 0, 1,
-	 N_("SERVCHAN <host> <port> <channel>, connects and joins a channel")},
-#endif
-#ifdef USE_OPENSSL
 	{"SERVER", cmd_server, 0, 0, 1,
 	 N_("SERVER [-ssl] <host> [<port>] [<password>], connects to a server, the default port is 6667 for normal connections, and 6697 for ssl connections")},
-#else
-	{"SERVER", cmd_server, 0, 0, 1,
-	 N_("SERVER <host> [<port>] [<password>], connects to a server, the default port is 6667")},
-#endif
 	{"SET", cmd_set, 0, 0, 1, N_("SET [-e] [-off|-on] [-quiet] <variable> [<value>]")},
 	{"SETCURSOR", cmd_setcursor, 0, 0, 1, N_("SETCURSOR [-|+]<position>, reposition the cursor in the inputbox")},
 	{"SETTAB", cmd_settab, 0, 0, 1, N_("SETTAB <new name>, change a tab's name, tab_trunc limit still applies")},

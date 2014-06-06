@@ -742,18 +742,6 @@ pevt_servertext_help
 %C29*%O$t$1
 n3
 
-SSL Message
-XP_TE_SSLMESSAGE
-pevt_sslmessage_help
-%C29*%O$t$1
-n2
-
-Stop Connection
-XP_TE_STOPCONNECT
-pevt_sconnect_help
-%C23*%O$tStopped previous connection attempt (%C24$1%O)
-1
-
 Topic
 XP_TE_TOPIC
 pevt_topic_help

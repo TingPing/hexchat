@@ -29,11 +29,7 @@
 #include <unistd.h>
 #endif
 
-#define WANTARPA
-#define WANTDNS
-#include "inet.h"
-
-#include <gio/gio.h>
+#include <gio/gnetworking.h>
 
 #include "hexchat.h"
 #include "util.h"

@@ -16,10 +16,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#define WANTSOCKET
-#include "inet.h"				/* make it first to avoid macro redefinitions */
-
-#define __APPLE_API_STRICT_CONFORMANCE
 
 #define _FILE_OFFSET_BITS 64
 #include <stdio.h>
@@ -41,6 +37,8 @@
 #include <sys/utsname.h>
 #endif
 
+#include <gio/gnetworking.h>
+
 #include "../../config.h"
 #include <fcntl.h>
 #include <errno.h>
@@ -58,6 +56,7 @@
 
 /* SASL mechanisms */
 #ifdef USE_OPENSSL
+#include <openssl/ssl.h>
 #include <openssl/bn.h>
 #include <openssl/rand.h>
 #include <openssl/blowfish.h>
@@ -116,78 +115,6 @@ nocasestrstr (const char *s, const char *wanted)
 		if (*s++ == '\0')
 			return (char *)NULL;
 	return (char *)s;
-}
-
-char *
-errorstring (int err)
-{
-	switch (err)
-	{
-	case -1:
-		return "";
-	case 0:
-		return _("Remote host closed socket");
-#ifndef WIN32
-	}
-#else
-	case WSAECONNREFUSED:
-		return _("Connection refused");
-	case WSAENETUNREACH:
-	case WSAEHOSTUNREACH:
-		return _("No route to host");
-	case WSAETIMEDOUT:
-		return _("Connection timed out");
-	case WSAEADDRNOTAVAIL:
-		return _("Cannot assign that address");
-	case WSAECONNRESET:
-		return _("Connection reset by peer");
-	}
-
-	/* can't use strerror() on Winsock errors! */
-	if (err >= WSABASEERR)
-	{
-		static char tbuf[384];
-		OSVERSIONINFO osvi;
-
-		osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-		GetVersionEx (&osvi);
-
-		/* FormatMessage works on WSA*** errors starting from Win2000 */
-		if (osvi.dwMajorVersion >= 5)
-		{
-			if (FormatMessageA (FORMAT_MESSAGE_FROM_SYSTEM |
-									  FORMAT_MESSAGE_IGNORE_INSERTS |
-									  FORMAT_MESSAGE_MAX_WIDTH_MASK,
-									  NULL, err,
-									  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
-									  tbuf, sizeof (tbuf), NULL))
-			{
-				int len;
-				char *utf;
-
-				tbuf[sizeof (tbuf) - 1] = 0;
-				len = strlen (tbuf);
-				if (len >= 2)
-					tbuf[len - 2] = 0;	/* remove the cr-lf */
-
-				/* now convert to utf8 */
-				utf = g_locale_to_utf8 (tbuf, -1, 0, 0, 0);
-				if (utf)
-				{
-					safe_strcpy (tbuf, utf, sizeof (tbuf));
-					g_free (utf);
-					return tbuf;
-				}
-			}
-		}	/* ! if (osvi.dwMajorVersion >= 5) */
-
-		/* fallback to error number */
-		sprintf (tbuf, "%s %d", _("Error"), err);
-		return tbuf;
-	} /* ! if (err >= WSABASEERR) */
-#endif	/* ! WIN32 */
-
-	return strerror (err);
 }
 
 int
@@ -1963,4 +1890,68 @@ strftime_utf8 (char *dest, gsize destsize, const char *format, time_t time)
 	result = g_date_strftime (dest, destsize, format, date);
 	g_date_free (date);
 	return result;
+}
+
+char *
+net_ip (guint32 addr)
+{
+	struct in_addr ia;
+
+	ia.s_addr = htonl (addr);
+	return inet_ntoa (ia);
+}
+
+/**
+ * Gets proxy uri from hexchats preferences
+ * formatted "<protocol>://[<user>[:<password>]@]<hostname>:<port>"
+ * Returns: Newly allocated string
+ */
+char *
+hexchat_proxy_uri (void)
+{
+	gchar uri[256];
+	gchar user_pass[128] = { 0 };
+
+	const gchar *user = prefs.hex_net_proxy_user;
+	const gchar *pass = prefs.hex_net_proxy_pass;
+	const gchar *host = prefs.hex_net_proxy_host;
+	const gint port = prefs.hex_net_proxy_port;
+	gchar *protocol;
+	
+	switch (prefs.hex_net_proxy_type)
+	{
+		case 0: /* Disabled */
+			return NULL;
+		case 1: /* wingate */
+			return NULL;
+		case 2:
+			protocol = "socks4";
+			break;
+		case 3:
+			protocol = "socks5";
+			break;
+		case 4: /* http */
+			return NULL;
+		default:
+			return NULL;
+	}
+
+	if (prefs.hex_net_proxy_auth && user && *user)
+	{
+		g_strlcpy (user_pass, user, sizeof(user_pass));
+		if (pass && *pass)
+		{
+			g_strlcat (user_pass, ":", sizeof(user_pass));
+			g_strlcat (user_pass, pass, sizeof(user_pass));
+		}
+		g_strlcat (user_pass, "@", sizeof(user_pass));
+	}
+	
+
+
+	g_snprintf (uri, sizeof(uri), "%s://%s%s:%d", protocol, user_pass, host, port);
+
+	g_printf ("%s\n", uri);
+
+	return g_strdup (uri);
 }

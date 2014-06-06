@@ -17,11 +17,9 @@ EXTRA_DIST = \
 	identd.c \
 	ignore.h \
 	inbound.h \
-	inet.h \
 	make-te.c \
 	modes.h \
 	msproxy.h \
-	network.h \
 	notify.h \
 	outbound.h \
 	plugin.h \
@@ -39,10 +37,6 @@ EXTRA_DIST = \
 	url.h \
 	userlist.h \
 	util.h
-
-if USE_OPENSSL
-ssl_c = ssl.c
-endif
 
 if USE_MSPROXY
 msproxy_c = msproxy.c
@@ -62,7 +56,7 @@ endif
 noinst_PROGRAMS = make-te
 
 libhexchatcommon_a_SOURCES = cfgfiles.c chanopt.c ctcp.c dcc.c hexchat.c \
-	history.c ignore.c inbound.c marshal.c modes.c $(msproxy_c) network.c notify.c \
+	history.c ignore.c inbound.c marshal.c modes.c $(msproxy_c) notify.c \
 	outbound.c plugin.c plugin-timer.c proto-irc.c server.c servlist.c \
 	$(ssl_c) text.c tree.c url.c userlist.c util.c
 libhexchatcommon_a_CFLAGS = $(LIBPROXY_CFLAGS)

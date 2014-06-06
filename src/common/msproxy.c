@@ -32,10 +32,6 @@
 #include <unistd.h>
 #endif
 
-#define WANTSOCKET
-#define WANTARPA
-#include "inet.h"
-
 #include "hexchat.h"
 #include "network.h"
 #include "hexchatc.h"
@@ -110,6 +106,7 @@ recv_mspresponse(s, state, response)
 	return r;
 }
 
+#if 0
 int
 traverse_msproxy (int sok, char *serverAddr, int port, struct msproxy_state_t *state, netstore *ns_proxy, int csok4, int csok6, int *csok, char bound)
 {
@@ -466,5 +463,5 @@ msproxy_keepalive (void)
 		list = list->next;
 	}
 }
-
+#endif /* MSPROXY */
 #endif

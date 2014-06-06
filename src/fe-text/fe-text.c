@@ -108,9 +108,6 @@ fe_new_window (struct session *sess, int focus)
 #ifdef ENABLE_NLS
 	"NLS "
 #endif
-#ifdef USE_OPENSSL
-	"OpenSSL "
-#endif
 	"\n\n", 0, FALSE);
 	fflush (stdout);
 }

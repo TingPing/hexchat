@@ -23,9 +23,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define WANTSOCKET
-#include "inet.h"
-
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -53,11 +50,6 @@
 
 #if ! GLIB_CHECK_VERSION (2, 36, 0)
 #include <glib-object.h>			/* for g_type_init() */
-#endif
-
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>			/* SSL_() */
-#include "ssl.h"
 #endif
 
 #ifdef USE_MSPROXY
@@ -117,10 +109,6 @@ gint arg_existing = FALSE;
 struct session *current_tab;
 struct session *current_sess = 0;
 struct hexchatprefs prefs;
-
-#ifdef USE_OPENSSL
-SSL_CTX *ctx = NULL;
-#endif
 
 #ifdef USE_LIBPROXY
 pxProxyFactory *libproxy_factory;
@@ -279,14 +267,16 @@ lag_check (void)
 		if (serv->connected && serv->end_of_motd)
 		{
 			lag = now - serv->ping_recv;
+#if 0
 			if (prefs.hex_net_ping_timeout && lag > prefs.hex_net_ping_timeout && lag > 0)
 			{
 				sprintf (tbuf, "%d", lag);
 				EMIT_SIGNAL (XP_TE_PINGTIMEOUT, serv->server_session, tbuf, NULL,
 								 NULL, NULL, 0);
 				if (prefs.hex_net_auto_reconnect)
-					serv->auto_reconnect (serv, FALSE, -1);
+					serv->auto_reconnect (serv, FALSE, "");
 			} else
+#endif
 			{
 				snprintf (tbuf, sizeof (tbuf), "LAG%lu", tim);
 				serv->p_ping (serv, "", tbuf);
@@ -1108,11 +1098,6 @@ main (int argc, char *argv[])
 
 #ifdef USE_LIBPROXY
 	px_proxy_factory_free(libproxy_factory);
-#endif
-
-#ifdef USE_OPENSSL
-	if (ctx)
-		_SSL_context_free (ctx);
 #endif
 
 #ifdef WIN32
