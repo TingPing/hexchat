@@ -54,12 +54,9 @@ struct DCC
 {
 	struct server *serv;
 	struct dcc_chat *dccchat;
-	struct proxy_state *proxy;
-	guint32 addr;					/* the 32bit IP number, host byte order */
+	GSocketConnection *conn;
+	GInetAddress *addr;				/* the 32bit IP */
 	int fp;							/* file pointer */
-	int sok;
-	int iotag;						/* reading io tag */
-	int wiotag;						/* writing/sending io tag */
 	int port;
 	int pasvid;						/* mIRC's passive DCC id */
 	int cps;
@@ -70,6 +67,7 @@ struct DCC
 	DCC_SIZE lastcpspos;
 	int maxcps;
 
+	char read_buf[4096];
 	unsigned char ack_buf[4];	/* buffer for reading 4-byte ack */
 	int ack_pos;
 
@@ -91,15 +89,6 @@ struct DCC
 										/* the resume point? */
 	unsigned int throttled:2;	/* 0x1 = per send/get throttle
 											0x2 = global throttle */
-};
-
-#define MAX_PROXY_BUFFER 1024
-struct proxy_state
-{
-	int phase;
-	unsigned char buffer[MAX_PROXY_BUFFER];
-	int buffersize;
-	int bufferused;
 };
 
 struct dcc_chat
@@ -132,7 +121,6 @@ void dcc_chat (session *sess, char *nick, int passive);
 void handle_dcc (session *sess, char *nick, char *word[], char *word_eol[],
 					  const message_tags_data *tags_data);
 void dcc_show_list (session *sess);
-guint32 dcc_get_my_address (void);
 void dcc_get_with_destfile (struct DCC *dcc, char *utf8file);
 
 #endif

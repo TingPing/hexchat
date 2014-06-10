@@ -258,7 +258,7 @@ chanopt_load_all (void)
 	fh = hexchat_open_file ("chanopt.conf", O_RDONLY, 0, 0);
 	if (fh != -1)
 	{
-		while (waitline (fh, buf, sizeof buf, FALSE) != -1)
+		while (waitline (fh, buf, sizeof buf) != -1)
 		{
 			eq = strchr (buf, '=');
 			if (!eq)

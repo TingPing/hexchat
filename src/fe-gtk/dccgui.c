@@ -526,7 +526,7 @@ resume_clicked (GtkWidget * wid, gpointer none)
 						_(	"Cannot access file: %s\n"
 							"%s.\n"
 							"Resuming not possible."), dcc->destfile,	
-							errorstring (dcc->resume_errno));
+							 "");//errorstring (dcc->resume_errno));
 			fe_message (buf, FE_MSG_ERROR);
 			break;
 		case 2:
@@ -621,6 +621,7 @@ static void
 dcc_details_populate (struct DCC *dcc)
 {
 	char buf[128];
+	char *address;
 
 	if (!dcc)
 	{
@@ -636,7 +637,10 @@ dcc_details_populate (struct DCC *dcc)
 		gtk_label_set_text (GTK_LABEL (dccfwin.file_label), dcc->file);
 
 	/* address and port */
-	snprintf (buf, sizeof (buf), "%s : %d", net_ip (dcc->addr), dcc->port);
+	address = g_inet_address_to_string (dcc->addr);
+	snprintf (buf, sizeof (buf), "%s : %d", address, dcc->port);
+	g_free (address);
+
 	gtk_label_set_text (GTK_LABEL (dccfwin.address_label), buf);
 }
 

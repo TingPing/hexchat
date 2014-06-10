@@ -118,48 +118,14 @@ nocasestrstr (const char *s, const char *wanted)
 }
 
 int
-waitline (int sok, char *buf, int bufsize, int use_recv)
+waitline (int sok, char *buf, int bufsize)
 {
 	int i = 0;
 
 	while (1)
 	{
-		if (use_recv)
-		{
-			if (recv (sok, &buf[i], 1, 0) < 1)
-				return -1;
-		} else
-		{
-			if (read (sok, &buf[i], 1) < 1)
-				return -1;
-		}
-		if (buf[i] == '\n' || bufsize == i + 1)
-		{
-			buf[i] = 0;
-			return i;
-		}
-		i++;
-	}
-}
-
-#ifdef WIN32
-/* waitline2 using win32 file descriptor and glib instead of _read. win32 can't _read() sok! */
-int
-waitline2 (GIOChannel *source, char *buf, int bufsize)
-{
-	int i = 0;
-	gsize len;
-	GError *error = NULL;
-
-	while (1)
-	{
-		g_io_channel_set_buffered (source, FALSE);
-		g_io_channel_set_encoding (source, NULL, &error);
-
-		if (g_io_channel_read_chars (source, &buf[i], 1, &len, &error) != G_IO_STATUS_NORMAL)
-		{
+		if (read (sok, &buf[i], 1) < 1)
 			return -1;
-		}
 		if (buf[i] == '\n' || bufsize == i + 1)
 		{
 			buf[i] = 0;
@@ -168,7 +134,6 @@ waitline2 (GIOChannel *source, char *buf, int bufsize)
 		i++;
 	}
 }
-#endif
 
 /* checks for "~" in a file and expands */
 
@@ -320,7 +285,7 @@ get_cpu_info (double *mhz, int *cpus)
 
 	while (1)
 	{
-		if (waitline (fh, buf, sizeof buf, FALSE) < 0)
+		if (waitline (fh, buf, sizeof buf) < 0)
 			break;
 		if (!strncmp (buf, "cycle frequency [Hz]\t:", 22))	/* alpha */
 		{

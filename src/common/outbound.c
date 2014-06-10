@@ -1398,7 +1398,7 @@ cmd_devoice (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 static int
 cmd_discon (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 {
-	sess->server->disconnect (sess, TRUE, -1);
+	sess->server->disconnect (sess, TRUE, "");
 	return TRUE;
 }
 
@@ -1901,7 +1901,7 @@ cmd_quit (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 {
 	if (*word_eol[2])
 		sess->quitreason = word_eol[2];
-	sess->server->disconnect (sess, TRUE, -1);
+	sess->server->disconnect (sess, TRUE, "");
 	sess->quitreason = NULL;
 	return 2;
 }
@@ -2542,7 +2542,6 @@ cmd_load (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		{
 			buf = g_strdup_printf ("%s%c%s", get_xdir(), G_DIR_SEPARATOR, file);
 			PrintTextf (sess, _("Cannot access %s\n"), buf);
-			PrintText (sess, errorstring (errno));
 			g_free (buf);
 		}
 		free (file);
